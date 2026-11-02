@@ -1,0 +1,686 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Synth-AI v6.0 - Comprehensive Stress Test</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      padding: 30px;
+    }
+    h1 {
+      color: #667eea;
+      margin-bottom: 10px;
+    }
+    .subtitle {
+      color: #666;
+      margin-bottom: 30px;
+    }
+    .controls {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 30px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 12px 24px;
+      background: #667eea;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    button:hover {
+      background: #5568d3;
+      transform: translateY(-2px);
+    }
+    button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+    .stat-card {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+    .stat-value {
+      font-size: 2rem;
+      font-weight: bold;
+      color: #667eea;
+    }
+    .stat-label {
+      color: #666;
+      margin-top: 5px;
+    }
+    .category {
+      margin-bottom: 30px;
+    }
+    .category-header {
+      background: #667eea;
+      color: white;
+      padding: 15px;
+      border-radius: 10px 10px 0 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+    .test-list {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 0 0 10px 10px;
+    }
+    .test-item {
+      background: white;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border-left: 4px solid #ccc;
+    }
+    .test-item.passed {
+      border-left-color: #28a745;
+    }
+    .test-item.failed {
+      border-left-color: #dc3545;
+    }
+    .test-item.running {
+      border-left-color: #ffc107;
+    }
+    .test-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    .test-name {
+      font-weight: bold;
+      font-size: 1.1rem;
+    }
+    .test-status {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+    .test-status.passed {
+      background: #d4edda;
+      color: #155724;
+    }
+    .test-status.failed {
+      background: #f8d7da;
+      color: #721c24;
+    }
+    .test-status.running {
+      background: #fff3cd;
+      color: #856404;
+    }
+    .test-status.pending {
+      background: #e2e3e5;
+      color: #383d41;
+    }
+    .test-input {
+      background: #f8f9fa;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-family: monospace;
+      font-size: 0.9rem;
+    }
+    .test-output {
+      background: white;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ddd;
+    }
+    .test-issues {
+      margin-top: 10px;
+      padding: 10px;
+      background: #fff3cd;
+      border-radius: 5px;
+      font-size: 0.9rem;
+    }
+    .progress-bar {
+      width: 100%;
+      height: 30px;
+      background: #e9ecef;
+      border-radius: 15px;
+      overflow: hidden;
+      margin-bottom: 20px;
+    }
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      transition: width 0.3s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: bold;
+    }
+    .log {
+      background: #1a1a1a;
+      color: #0f0;
+      padding: 20px;
+      border-radius: 10px;
+      font-family: monospace;
+      font-size: 0.85rem;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 30px;
+    }
+    .log-entry {
+      margin-bottom: 5px;
+    }
+    .log-entry.error {
+      color: #f55;
+    }
+    .log-entry.success {
+      color: #5f5;
+    }
+    .log-entry.info {
+      color: #5ff;
+    }
+    .summary {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 30px;
+    }
+    .summary h3 {
+      color: #667eea;
+      margin-bottom: 15px;
+    }
+    .summary-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🧪 Synth-AI v6.0 - Comprehensive Stress Test</h1>
+    <p class="subtitle">Systematic testing of all code generation, modification, and context handling capabilities</p>
+    
+    <div class="controls">
+      <button id="runAllTests" onclick="runAllTests()">🚀 Run All Tests (70+)</button>
+      <button id="runQuickTests" onclick="runQuickTests()">⚡ Quick Test (20)</button>
+      <button id="clearResults" onclick="clearResults()">🗑️ Clear Results</button>
+      <button id="exportResults" onclick="exportResults()">📥 Export Results</button>
+    </div>
+
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill" style="width: 0%;">0%</div>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-value" id="totalTests">0</div>
+        <div class="stat-label">Total Tests</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="passedTests">0</div>
+        <div class="stat-label">Passed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="failedTests">0</div>
+        <div class="stat-label">Failed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="passRate">0%</div>
+        <div class="stat-label">Pass Rate</div>
+      </div>
+    </div>
+
+    <div id="testCategories"></div>
+
+    <div class="summary" id="summary" style="display: none;">
+      <h3>📊 Test Summary</h3>
+      <div id="summaryContent"></div>
+    </div>
+
+    <div class="log" id="log"></div>
+  </div>
+
+  <script type="module">
+    import { SynthAI } from './SynthEngine.js';
+
+    let synth = null;
+    let testResults = [];
+    let currentTestIndex = 0;
+
+    const testCategories = [
+      {
+        name: 'Code Generation - Basic Components',
+        tests: [
+          { input: 'build a calendar', checks: ['<!DOCTYPE html', 'calendar'] },
+          { input: 'create a timer', checks: ['<!DOCTYPE html', 'timer'] },
+          { input: 'make a calculator', checks: ['<!DOCTYPE html', 'calculator'] },
+          { input: 'generate a todo list', checks: ['<!DOCTYPE html', 'todo'] },
+          { input: 'build a form', checks: ['<!DOCTYPE html', 'form'] },
+          { input: 'create a game', checks: ['<!DOCTYPE html', 'game'] },
+          { input: 'build a website', checks: ['<!DOCTYPE html', 'website'] },
+          { input: 'create a dashboard', checks: ['<!DOCTYPE html', 'dashboard'] },
+          { input: 'build a chart', checks: ['<!DOCTYPE html', 'chart'] },
+          { input: 'create a player', checks: ['<!DOCTYPE html', 'player'] },
+        ]
+      },
+      {
+        name: 'Code Generation - Theme Variations',
+        tests: [
+          { input: 'build a beach calendar', checks: ['<!DOCTYPE html', 'calendar', '#87CEEB'] },
+          { input: 'create a dark timer', checks: ['<!DOCTYPE html', 'timer', '#0f0c29'] },
+          { input: 'make a light calculator', checks: ['<!DOCTYPE html', 'calculator', '#f5f7fa'] },
+          { input: 'generate a colorful todo', checks: ['<!DOCTYPE html', 'todo', '#667eea'] },
+          { input: 'build a minimal form', checks: ['<!DOCTYPE html', 'form', '#f8f9fa'] },
+          { input: 'create a modern game', checks: ['<!DOCTYPE html', 'game', '#667eea'] },
+          { input: 'build a retro website', checks: ['<!DOCTYPE html', 'website', '#ffecd2'] },
+          { input: 'create a futuristic dashboard', checks: ['<!DOCTYPE html', 'dashboard', '#0c0c0c'] },
+          { input: 'build a nature chart', checks: ['<!DOCTYPE html', 'chart', '#56ab2f'] },
+          { input: 'create a space player', checks: ['<!DOCTYPE html', 'player', '#000428'] },
+        ]
+      },
+      {
+        name: 'Code Generation - Feature Combinations',
+        tests: [
+          { input: 'build an interactive calendar', checks: ['<!DOCTYPE html', 'calendar', 'interactive'] },
+          { input: 'create an animated timer', checks: ['<!DOCTYPE html', 'timer', 'animation'] },
+          { input: 'make a responsive calculator', checks: ['<!DOCTYPE html', 'calculator', 'responsive'] },
+          { input: 'generate a real-time todo', checks: ['<!DOCTYPE html', 'todo', 'real-time'] },
+          { input: 'build a countdown timer', checks: ['<!DOCTYPE html', 'timer', 'countdown'] },
+          { input: 'create a new year countdown', checks: ['<!DOCTYPE html', 'countdown', 'new year'] },
+          { input: 'build a draggable form', checks: ['<!DOCTYPE html', 'form', 'drag'] },
+          { input: 'create a searchable list', checks: ['<!DOCTYPE html', 'list', 'search'] },
+          { input: 'build a filterable gallery', checks: ['<!DOCTYPE html', 'gallery', 'filter'] },
+          { input: 'create a sortable table', checks: ['<!DOCTYPE html', 'table', 'sort'] },
+        ]
+      },
+      {
+        name: 'Modification & Context',
+        tests: [
+          { input: 'build a timer', followUp: 'make it beach themed', checks: ['<!DOCTYPE html', 'beach'] },
+          { input: 'create a calendar', followUp: 'change it to dark mode', checks: ['<!DOCTYPE html', 'dark'] },
+          { input: 'build a calculator', followUp: 'add animations', checks: ['<!DOCTYPE html', 'animation'] },
+          { input: 'make a todo list', followUp: 'make it responsive', checks: ['<!DOCTYPE html', 'responsive'] },
+          { input: 'build a form', followUp: 'change color to red', checks: ['<!DOCTYPE html', 'red'] },
+          { input: 'create a game', followUp: 'make it bigger', checks: ['<!DOCTYPE html', 'font-size'] },
+          { input: 'build a website', followUp: 'add beach background', checks: ['<!DOCTYPE html', 'beach'] },
+          { input: 'create a dashboard', followUp: 'make it dark', checks: ['<!DOCTYPE html', 'dark'] },
+          { input: 'build a chart', followUp: 'add animations', checks: ['<!DOCTYPE html', 'animation'] },
+          { input: 'create a player', followUp: 'make it beach themed', checks: ['<!DOCTYPE html', 'beach'] },
+        ]
+      },
+      {
+        name: 'Typo Handling',
+        tests: [
+          { input: 'buld a timer', checks: ['<!DOCTYPE html', 'timer'] },
+          { input: 'cretae a calendar', checks: ['<!DOCTYPE html', 'calendar'] },
+          { input: 'mak a calculator', checks: ['<!DOCTYPE html', 'calculator'] },
+          { input: 'genrate a todo', checks: ['<!DOCTYPE html', 'todo'] },
+          { input: 'build a dbeach calendar', checks: ['<!DOCTYPE html', 'beach'] },
+          { input: 'create a backgroun timer', checks: ['<!DOCTYPE html', 'background'] },
+          { input: 'make a cnew calculator', checks: ['<!DOCTYPE html', 'new'] },
+          { input: 'build a calender', checks: ['<!DOCTYPE html', 'calendar'] },
+          { input: 'create a tiemr', checks: ['<!DOCTYPE html', 'timer'] },
+          { input: 'make a calculatr', checks: ['<!DOCTYPE html', 'calculator'] },
+        ]
+      },
+      {
+        name: 'Edge Cases',
+        tests: [
+          { input: 'build', checks: ['clarif', 'help'] },
+          { input: 'asdfghjkl', checks: ['clarif', 'understand'] },
+          { input: 'i am frustrated build me a calendar', checks: ['<!DOCTYPE html', 'calendar'] },
+          { input: 'ASAP build a timer', checks: ['<!DOCTYPE html', 'timer'] },
+          { input: 'please build a calculator', checks: ['<!DOCTYPE html', 'calculator'] },
+          { input: 'yo build me a todo', checks: ['<!DOCTYPE html', 'todo'] },
+          { input: 'sup create a form', checks: ['<!DOCTYPE html', 'form'] },
+          { input: 'hey make a game', checks: ['<!DOCTYPE html', 'game'] },
+          { input: 'build a calendar that has months and years and days', checks: ['<!DOCTYPE html', 'calendar'] },
+          { input: 'create a timer and a calculator', checks: ['<!DOCTYPE html'] },
+        ]
+      },
+      {
+        name: 'Multi-Turn Conversations',
+        tests: [
+          { input: 'build a calendar', followUp: 'now make it interactive', checks: ['<!DOCTYPE html', 'interactive'] },
+          { input: 'create a timer', followUp: 'add beach theme', checks: ['<!DOCTYPE html', 'beach'] },
+          { input: 'build a calculator', followUp: 'make it dark', followUp2: 'add animations', checks: ['<!DOCTYPE html', 'dark'] },
+          { input: 'create a todo', followUp: 'make it responsive', followUp2: 'add search', checks: ['<!DOCTYPE html', 'responsive'] },
+          { input: 'build a form', followUp: 'change color to blue', checks: ['<!DOCTYPE html', 'blue'] },
+          { input: 'create a game', followUp: 'make it bigger', followUp2: 'add animations', checks: ['<!DOCTYPE html', 'animation'] },
+          { input: 'build a website', followUp: 'add navigation', followUp2: 'make it responsive', checks: ['<!DOCTYPE html', 'responsive'] },
+          { input: 'create a dashboard', followUp: 'add charts', followUp2: 'make it dark', checks: ['<!DOCTYPE html', 'dark'] },
+          { input: 'build a chart', followUp: 'add animations', followUp2: 'make it interactive', checks: ['<!DOCTYPE html', 'interactive'] },
+          { input: 'create a player', followUp: 'add beach theme', followUp2: 'make it responsive', checks: ['<!DOCTYPE html', 'beach'] },
+        ]
+      }
+    ];
+
+    function log(message, type = 'info') {
+      const logEl = document.getElementById('log');
+      const entry = document.createElement('div');
+      entry.className = `log-entry ${type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logEl.appendChild(entry);
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    function updateStats() {
+      const total = testResults.length;
+      const passed = testResults.filter(r => r.passed).length;
+      const failed = total - passed;
+      const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+
+      document.getElementById('totalTests').textContent = total;
+      document.getElementById('passedTests').textContent = passed;
+      document.getElementById('failedTests').textContent = failed;
+      document.getElementById('passRate').textContent = `${rate}%`;
+
+      const totalTests = testCategories.reduce((sum, cat) => sum + cat.tests.length, 0);
+      const progress = (total / totalTests) * 100;
+      const progressFill = document.getElementById('progressFill');
+      progressFill.style.width = `${progress}%`;
+      progressFill.textContent = `${progress.toFixed(0)}%`;
+    }
+
+    function renderTestResult(categoryIndex, testIndex, result) {
+      const category = testCategories[categoryIndex];
+      const test = category.tests[testIndex];
+      
+      let categoryEl = document.getElementById(`category-${categoryIndex}`);
+      if (!categoryEl) {
+        categoryEl = document.createElement('div');
+        categoryEl.className = 'category';
+        categoryEl.id = `category-${categoryIndex}`;
+        categoryEl.innerHTML = `
+          <div class="category-header">${category.name}</div>
+          <div class="test-list" id="test-list-${categoryIndex}"></div>
+        `;
+        document.getElementById('testCategories').appendChild(categoryEl);
+      }
+      
+      const testList = document.getElementById(`test-list-${categoryIndex}`);
+      const testEl = document.createElement('div');
+      testEl.className = `test-item ${result.passed ? 'passed' : 'failed'}`;
+      testEl.id = `test-${categoryIndex}-${testIndex}`;
+      
+      testEl.innerHTML = `
+        <div class="test-header">
+          <div class="test-name">Test ${testIndex + 1}</div>
+          <div class="test-status ${result.passed ? 'passed' : 'failed'}">
+            ${result.passed ? '✅ PASSED' : '❌ FAILED'}
+          </div>
+        </div>
+        <div class="test-input">Input: "${test.input}"</div>
+        ${test.followUp ? `<div class="test-input">Follow-up: "${test.followUp}"</div>` : ''}
+        ${test.followUp2 ? `<div class="test-input">Follow-up 2: "${test.followUp2}"</div>` : ''}
+        <div class="test-output">${result.output.substring(0, 500)}${result.output.length > 500 ? '...' : ''}</div>
+        ${result.issues.length > 0 ? `
+          <div class="test-issues">
+            <strong>Issues:</strong>
+            <ul>
+              ${result.issues.map(issue => `<li>${issue}</li>`).join('')}
+            </ul>
+          </div>
+        ` : ''}
+      `;
+      
+      testList.appendChild(testEl);
+    }
+
+    async function runTest(categoryIndex, testIndex) {
+      const category = testCategories[categoryIndex];
+      const test = category.tests[testIndex];
+      
+      const testEl = document.getElementById(`test-${categoryIndex}-${testIndex}`);
+      if (testEl) {
+        testEl.className = 'test-item running';
+        testEl.querySelector('.test-status').className = 'test-status running';
+        testEl.querySelector('.test-status').textContent = '🔄 RUNNING';
+      }
+      
+      try {
+        let response = await synth.process(test.input);
+        let output = response.response;
+        
+        if (test.followUp) {
+          response = await synth.process(test.followUp);
+          output = response.response;
+        }
+        
+        if (test.followUp2) {
+          response = await synth.process(test.followUp2);
+          output = response.response;
+        }
+        
+        const result = {
+          passed: true,
+          output: output,
+          issues: []
+        };
+        
+        for (const check of test.checks) {
+          const checkLower = check.toLowerCase();
+          const outputLower = output.toLowerCase();
+          
+          if (!outputLower.includes(checkLower)) {
+            result.passed = false;
+            result.issues.push(`Missing: "${check}"`);
+          }
+        }
+        
+        if (!output.includes('<!DOCTYPE html>') && test.checks.includes('<!DOCTYPE html>')) {
+          result.passed = false;
+          result.issues.push('No HTML generated');
+        }
+        
+        testResults.push(result);
+        renderTestResult(categoryIndex, testIndex, result);
+        updateStats();
+        
+        if (result.passed) {
+          log(`✅ Test ${testIndex + 1} passed: ${test.input}`, 'success');
+        } else {
+          log(`❌ Test ${testIndex + 1} failed: ${test.input}`, 'error');
+          result.issues.forEach(issue => log(`   - ${issue}`, 'error'));
+        }
+        
+        return result;
+        
+      } catch (error) {
+        const result = {
+          passed: false,
+          output: `ERROR: ${error.message}`,
+          issues: [`Exception: ${error.message}`]
+        };
+        
+        testResults.push(result);
+        renderTestResult(categoryIndex, testIndex, result);
+        updateStats();
+        
+        log(`❌ Test ${testIndex + 1} error: ${error.message}`, 'error');
+        return result;
+      }
+    }
+
+    window.runAllTests = async function() {
+      if (!synth) {
+        synth = new SynthAI();
+        log('SynthAI initialized', 'success');
+      }
+      
+      document.getElementById('runAllTests').disabled = true;
+      document.getElementById('runQuickTests').disabled = true;
+      document.getElementById('testCategories').innerHTML = '';
+      testResults = [];
+      
+      log('Starting all tests...', 'info');
+      
+      for (let catIndex = 0; catIndex < testCategories.length; catIndex++) {
+        const category = testCategories[catIndex];
+        log(`\n${'='.repeat(60)}`, 'info');
+        log(`Category: ${category.name}`, 'info');
+        log(`${'='.repeat(60)}`, 'info');
+        
+        for (let testIndex = 0; testIndex < category.tests.length; testIndex++) {
+          await runTest(catIndex, testIndex);
+        }
+      }
+      
+      log('\n' + '='.repeat(60), 'success');
+      log('All tests complete!', 'success');
+      log('='.repeat(60), 'success');
+      
+      showSummary();
+      
+      document.getElementById('runAllTests').disabled = false;
+      document.getElementById('runQuickTests').disabled = false;
+    };
+
+    window.runQuickTests = async function() {
+      if (!synth) {
+        synth = new SynthAI();
+        log('SynthAI initialized', 'success');
+      }
+      
+      document.getElementById('runAllTests').disabled = true;
+      document.getElementById('runQuickTests').disabled = true;
+      document.getElementById('testCategories').innerHTML = '';
+      testResults = [];
+      
+      log('Starting quick tests (first 5 from each category)...', 'info');
+      
+      for (let catIndex = 0; catIndex < testCategories.length; catIndex++) {
+        const category = testCategories[catIndex];
+        log(`\n${'='.repeat(60)}`, 'info');
+        log(`Category: ${category.name}`, 'info');
+        log(`${'='.repeat(60)}`, 'info');
+        
+        const quickTests = category.tests.slice(0, 5);
+        for (let testIndex = 0; testIndex < quickTests.length; testIndex++) {
+          await runTest(catIndex, testIndex);
+        }
+      }
+      
+      log('\n' + '='.repeat(60), 'success');
+      log('Quick tests complete!', 'success');
+      log('='.repeat(60), 'success');
+      
+      showSummary();
+      
+      document.getElementById('runAllTests').disabled = false;
+      document.getElementById('runQuickTests').disabled = false;
+    };
+
+    function showSummary() {
+      const summary = document.getElementById('summary');
+      const summaryContent = document.getElementById('summaryContent');
+      
+      const total = testResults.length;
+      const passed = testResults.filter(r => r.passed).length;
+      const failed = total - passed;
+      const rate = total > 0 ? ((passed / total) * 100).toFixed(1) : 0;
+      
+      let html = `
+        <div class="summary-item">
+          <span>Total Tests:</span>
+          <span><strong>${total}</strong></span>
+        </div>
+        <div class="summary-item">
+          <span>Passed:</span>
+          <span><strong style="color: #28a745;">${passed}</strong></span>
+        </div>
+        <div class="summary-item">
+          <span>Failed:</span>
+          <span><strong style="color: #dc3545;">${failed}</strong></span>
+        </div>
+        <div class="summary-item">
+          <span>Pass Rate:</span>
+          <span><strong>${rate}%</strong></span>
+        </div>
+      `;
+      
+      // Add category breakdown
+      testCategories.forEach((category, catIndex) => {
+        const categoryResults = testResults.slice(catIndex * 10, (catIndex + 1) * 10);
+        const categoryPassed = categoryResults.filter(r => r.passed).length;
+        const categoryRate = ((categoryPassed / categoryResults.length) * 100).toFixed(1);
+        
+        html += `
+          <div class="summary-item">
+            <span>${category.name}:</span>
+            <span><strong>${categoryPassed}/${categoryResults.length} (${categoryRate}%)</strong></span>
+          </div>
+        `;
+      });
+      
+      summaryContent.innerHTML = html;
+      summary.style.display = 'block';
+    }
+
+    window.clearResults = function() {
+      testResults = [];
+      document.getElementById('testCategories').innerHTML = '';
+      document.getElementById('log').innerHTML = '';
+      document.getElementById('summary').style.display = 'none';
+      updateStats();
+      log('Results cleared', 'info');
+    };
+
+    window.exportResults = function() {
+      const data = {
+        timestamp: new Date().toISOString(),
+        total: testResults.length,
+        passed: testResults.filter(r => r.passed).length,
+        failed: testResults.filter(r => !r.passed).length,
+        passRate: ((testResults.filter(r => r.passed).length / testResults.length) * 100).toFixed(1) + '%',
+        results: testResults
+      };
+      
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `synth-stress-test-${Date.now()}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      
+      log('Results exported', 'success');
+    };
+
+    log('Comprehensive Stress Test ready', 'success');
+    log('Click "Run All Tests" for 70+ tests or "Quick Test" for 35 tests', 'info');
+  </script>
+</body>
+</html>
